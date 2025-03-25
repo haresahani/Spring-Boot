@@ -1,12 +1,12 @@
 package net.engineeringdigest.journalApp.entity;
 
-public class JoutnalEntry {
+public class JournalEntry {
     private long id;
 
     private String title;
 
     private String content;
-    
+
     public long getId() {
         return id;
     }

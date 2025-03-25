@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import net.engineeringdigest.journalApp.entity.JournalEntry;
+
 
 
 @RestController
@@ -34,7 +36,7 @@ public class JournalEntryController {
     }
 
     @GetMapping("id/{myId}") 
-    public JournalEntry getJournalEntryById(@Pathvariable Long myId) {
+    public JournalEntry getJournalEntryById(@PathVariable Long myId) {
         return journalEntries.get(myId);
     }
 
@@ -49,3 +51,11 @@ public class JournalEntryController {
     }
 
 }
+
+
+
+
+
+
+//journalApp/src/main/java/net/engineeringdigest/journalApp/controller/JournalEntryController.java
+//journalApp/src/main/java/net/engineeringdigest/journalApp/entity.java

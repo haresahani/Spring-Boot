@@ -71,7 +71,7 @@ public class JournalEntryController {
     public ResponseEntity<?> updateJournalEntry(@PathVariable String id, @RequestBody JournalEntry myEntry) {
         JournalEntry oldEntry = journalEntryService.findById(new ObjectId(id)).orElse(null);
         if (oldEntry != null) {
-            if (myEntry.getTitle() != null && !myEntry.getTitle().isEmpty()) {
+            if (!myEntry.getTitle().isEmpty()) {
                 oldEntry.setTitle(myEntry.getTitle());
             }
             if (myEntry.getContent() != null && !myEntry.getContent().isEmpty()) {

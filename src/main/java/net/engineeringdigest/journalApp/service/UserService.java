@@ -32,11 +32,11 @@ public class UserService {
         userRepository.deleteById(id);
     }
 
-    public User findByUsername(String username) {
+    public User findByUserName(String username) {
         return userRepository.findByUserName(username);
     }
 }
 
 
 //controller --> service ---> repository
-//journalApp/src/main/java/net/engineeringdigest/journalApp/service/JournalEntryService.java
+//journalApp/src/main/java/net/engineeringdigest/journalApp/service/userService.java

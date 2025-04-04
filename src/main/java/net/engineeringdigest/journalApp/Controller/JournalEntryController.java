@@ -1,6 +1,5 @@
 package net.engineeringdigest.journalApp.controller;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -18,9 +17,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import net.engineeringdigest.journalApp.entity.JournalEntry;
+import net.engineeringdigest.journalApp.entity.User;
 import net.engineeringdigest.journalApp.service.JournalEntryService;
-
-
+import net.engineeringdigest.journalApp.service.UserService;
 
 @RestController
 @RequestMapping("/journal")
@@ -29,20 +28,23 @@ public class JournalEntryController {
     @Autowired
     private JournalEntryService journalEntryService;
 
-    @GetMapping
-    public ResponseEntity<?> getAll() {
-        List<JournalEntry> all = journalEntryService.getAll();
-        if(all != null && !all.isEmpty()) {
+    @Autowired
+    private UserService userService;
+
+    @GetMapping("{UserName}")
+    public ResponseEntity<?> getAllJournalEntriesOfUser(@PathVariable String UserName) {
+        User user = userService.findByUserName(UserName);
+        List<JournalEntry> all = user.getJournalEntries();
+        if (all != null && !all.isEmpty()) {
             return new ResponseEntity<>(all, HttpStatus.OK);
         }
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
-    @PostMapping
-    public ResponseEntity<JournalEntry> createEntry(@RequestBody JournalEntry myEntry) {
+    @PostMapping("{userName}")
+    public ResponseEntity<JournalEntry> createEntry(@RequestBody JournalEntry myEntry, @PathVariable String userName) {
         try {
-            myEntry.setDate(LocalDateTime.now());
-            journalEntryService.saveEntry(myEntry);
+            journalEntryService.saveEntry(myEntry, userName);
             return new ResponseEntity<>(myEntry, HttpStatus.CREATED);
         } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
@@ -55,35 +57,52 @@ public class JournalEntryController {
             ObjectId objectId = new ObjectId(myId); // Convert String to ObjectId
             Optional<JournalEntry> journalEntry = journalEntryService.findById(objectId);
             return journalEntry.map(entry -> new ResponseEntity<>(entry, HttpStatus.OK))
-                               .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
+                    .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
         } catch (IllegalArgumentException e) { // Catch invalid ObjectId format
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
 
-    @DeleteMapping("id/{myId}")
-    public ResponseEntity<?> deletejJournalEntry(@PathVariable ObjectId myId) {
-        journalEntryService.deleteById(myId);
+    @DeleteMapping("id/{userName}/{myId}")
+    public ResponseEntity<?> deletejJournalEntry(@PathVariable ObjectId myId, @PathVariable String userName) {
+        journalEntryService.deleteById(myId, userName);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-    @PutMapping("/id/{id}")
-    public ResponseEntity<?> updateJournalEntry(@PathVariable String id, @RequestBody JournalEntry myEntry) {
-        JournalEntry oldEntry = journalEntryService.findById(new ObjectId(id)).orElse(null);
-        if (oldEntry != null) {
-            if (!myEntry.getTitle().isEmpty()) {
-                oldEntry.setTitle(myEntry.getTitle());
+    @PutMapping("id/{userName}/{myId}")
+    public ResponseEntity<?> updateJournalEntry(
+            @PathVariable String myId,
+            @RequestBody JournalEntry newEntry,
+            @PathVariable String userName) {
+        try {
+            ObjectId objectId = new ObjectId(myId);
+            JournalEntry oldEntry = journalEntryService.findById(objectId).orElse(null);
+
+            if (oldEntry != null) {
+                // Update title if new one is provided
+                if (newEntry.getTitle() != null && !newEntry.getTitle().isEmpty()) {
+                    oldEntry.setTitle(newEntry.getTitle());
+                }
+
+                // Update content if new one is provided
+                if (newEntry.getContent() != null && !newEntry.getContent().isEmpty()) {
+                    oldEntry.setContent(newEntry.getContent());
+                }
+
+                // Save updated entry
+                journalEntryService.saveEntry(oldEntry);
+
+                return new ResponseEntity<>(oldEntry, HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>("Journal entry not found", HttpStatus.NOT_FOUND);
             }
-            if (myEntry.getContent() != null && !myEntry.getContent().isEmpty()) {
-                oldEntry.setContent(myEntry.getContent());
-            }
-            return new ResponseEntity<>(oldEntry, HttpStatus.OK);
+
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>("Invalid ObjectId format", HttpStatus.BAD_REQUEST);
         }
-        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
 }
 
 
 //journalApp/src/main/java/net/engineeringdigest/journalApp/controller/JournalEntryController.java
-//journalApp/src/main/java/net/engineeringdigest/journalApp/entity.java

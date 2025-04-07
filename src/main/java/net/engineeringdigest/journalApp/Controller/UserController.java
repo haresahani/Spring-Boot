@@ -19,6 +19,7 @@ import net.engineeringdigest.journalApp.service.UserService;
 @RestController
 @RequestMapping("/user")
 public class UserController {
+
     @Autowired
     private UserService userService;
 
@@ -28,20 +29,26 @@ public class UserController {
     }
 
     @PostMapping
-    public void createUser(@RequestBody User user) {
-        userService.saveEntry(user);
+    public ResponseEntity<?> createUser(@RequestBody User user) {
+        try {
+            userService.saveEntry(user);
+            return new ResponseEntity<>("User created successfully", HttpStatus.CREATED);
+        } catch (Exception e) {
+            e.printStackTrace(); // log to console
+            return new ResponseEntity<>("Error: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     @PutMapping("/{userName}")
     public ResponseEntity<?> updateUser(@RequestBody User user, @PathVariable String userName) {
         User userInDb = userService.findByUserName(userName);
-        if(userInDb != null) {
+        if (userInDb != null) {
             userInDb.setUserName(user.getUserName());
             userInDb.setPassword(user.getPassword());
             userService.saveEntry(userInDb);
             return new ResponseEntity<>("User updated successfully!", HttpStatus.OK);
         }
-        return new ResponseEntity<>("User not found!",HttpStatus.NO_CONTENT);
+        return new ResponseEntity<>("User not found!", HttpStatus.NO_CONTENT);
     }
 }
 

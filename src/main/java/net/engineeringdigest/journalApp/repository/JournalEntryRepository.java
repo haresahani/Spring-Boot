@@ -8,3 +8,5 @@ import net.engineeringdigest.journalApp.entity.JournalEntry;
 public interface JournalEntryRepository extends MongoRepository<JournalEntry, ObjectId>{
     
 }
+
+//journalApp/src/main/java/net/engineeringdigest/journalApp/repository/JournalEntryRepository.java
